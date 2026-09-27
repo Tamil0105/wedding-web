@@ -49,6 +49,19 @@
     overflow-x:hidden;
   }
   h1,h2,h3,.serif{font-family:'Cormorant Garamond', serif;}
+ /* Lock page scrolling until the invitation intro is complete */
+html.intro-locked,
+body.intro-locked {
+  overflow: hidden !important;
+  height: 100%;
+  touch-action: none;
+}
+
+/* Optional: make the scroll cue appear only after intro */
+.scroll-cue.is-visible {
+  opacity: .85;
+  pointer-events: auto;
+}
   img{max-width:100%; display:block;}
   a{color:inherit; text-decoration:none;}
 
@@ -2468,7 +2481,7 @@
       <source src="assets/opening.mp4" type="video/mp4">
     </video>
     <div class="cover-content" id="coverContent">
-      <img class="monogram" src="assets/nn.png" alt="Esvaran and Ashwieni monogram">
+      <img class="monogram" src="assets/NN.png" alt="Esvaran and Ashwieni monogram">
       <h1>Nandhakumar &amp; Naveena</h1>
       <button class="open-btn" id="openBtn">OPEN INVITATION</button>
     </div>
@@ -3127,75 +3140,329 @@
   // Opening the invitation only plays the intro, music and flowers.
   // There is intentionally NO automatic scroll.
   // The cover is removed only after the user manually reaches the second page.
-  var cover = document.getElementById('cover');
-  var coverVideo = document.getElementById('coverVideo');
-  var coverContent = document.getElementById('coverContent');
-  var scrollCue = document.getElementById('scrollCue');
-  var openBtn = document.getElementById('openBtn');
-  var coverOpened = false;
-  var coverRemoved = false;
+  // var cover = document.getElementById('cover');
+  // var coverVideo = document.getElementById('coverVideo');
+  // var coverContent = document.getElementById('coverContent');
+  // var scrollCue = document.getElementById('scrollCue');
+  // var openBtn = document.getElementById('openBtn');
+  // var coverOpened = false;
+  // var coverRemoved = false;
 
-  openBtn.addEventListener('click', function(){
-    if(coverOpened) return;
-    coverOpened = true;
+  // openBtn.addEventListener('click', function(){
+  //   if(coverOpened) return;
+  //   coverOpened = true;
 
-    coverContent.classList.add('is-hidden');
-    startMusic();
-    startPetals();
+  //   coverContent.classList.add('is-hidden');
+  //   startMusic();
+  //   startPetals();
 
-    // Intro animation plays without changing the user's scroll position.
-    coverVideo.play().catch(function(){});
+  //   // Intro animation plays without changing the user's scroll position.
+  //   coverVideo.play().catch(function(){});
+  // });
+
+  // coverVideo.addEventListener('ended', function(){
+  //   scrollCue.classList.add('is-visible');
+  // });
+
+  // // Remove the first page ONLY when the second page is fully visible.
+  // // Scroll position is compensated so the second page does not jump.
+  // var coupleSection = document.querySelector('.couple');
+
+  // function removeCoverAfterSecondPage(){
+  //   if(coverRemoved || !coverOpened || !coupleSection) return;
+
+  //   var rect = coupleSection.getBoundingClientRect();
+  //   var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+  //   // "Fully reached" means the second page occupies the viewport
+  //   // from its top to its bottom (or is effectively the active page on small screens).
+  //   var fullyReached =
+  //     rect.top >= -4 &&
+  //     rect.bottom <= viewportHeight + 4;
+
+  //   if(!fullyReached) return;
+
+  //   var coverHeight = cover.getBoundingClientRect().height;
+
+  //   coverRemoved = true;
+  //   cover.classList.add('cover-exiting');
+
+  //   setTimeout(function(){
+  //     // Preserve the visual scroll position before removing the cover.
+  //     var before = window.scrollY;
+  //     cover.classList.add('cover-removed');
+  //     cover.setAttribute('aria-hidden','true');
+
+  //     // Removing the cover from normal flow moves everything upward.
+  //     // Compensate by the exact cover height, so the second page stays put.
+  //     var after = window.scrollY;
+  //     var delta = before - after;
+
+  //     if(Math.abs(delta) > 1){
+  //       window.scrollTo(0, before - delta);
+  //     }
+
+  //     document.body.classList.add('invitation-opened');
+  //   }, 650);
+  // }
+
+  // // Use scroll + resize so the user remains fully in control.
+  // window.addEventListener('scroll', removeCoverAfterSecondPage, {passive:true});
+  // window.addEventListener('resize', removeCoverAfterSecondPage);
+ // ---------- Open invitation ----------
+
+var cover = document.getElementById('cover');
+var coverVideo = document.getElementById('coverVideo');
+var coverContent = document.getElementById('coverContent');
+var scrollCue = document.getElementById('scrollCue');
+var openBtn = document.getElementById('openBtn');
+
+var coverOpened = false;
+var coverRemoved = false;
+
+// IMPORTANT:
+// Page starts completely locked.
+// User cannot scroll before opening the invitation.
+document.documentElement.classList.add('intro-locked');
+document.body.classList.add('intro-locked');
+
+
+// --------------------------------------------------
+// LOCK / UNLOCK SCROLL
+// --------------------------------------------------
+
+var introFinished = false;
+
+function preventIntroScroll(e) {
+  if (!introFinished) {
+    e.preventDefault();
+  }
+}
+
+function preventIntroKeys(e) {
+  if (introFinished) return;
+
+  var blockedKeys = [
+    'ArrowUp',
+    'ArrowDown',
+    'PageUp',
+    'PageDown',
+    'Home',
+    'End',
+    ' '
+  ];
+
+  if (blockedKeys.indexOf(e.key) !== -1) {
+    e.preventDefault();
+  }
+}
+
+
+// Prevent mouse wheel
+window.addEventListener(
+  'wheel',
+  preventIntroScroll,
+  { passive: false }
+);
+
+// Prevent touch scrolling
+window.addEventListener(
+  'touchmove',
+  preventIntroScroll,
+  { passive: false }
+);
+
+// Prevent keyboard scrolling
+window.addEventListener(
+  'keydown',
+  preventIntroKeys
+);
+
+
+// --------------------------------------------------
+// UNLOCK SCROLL AFTER FIRST PAGE ANIMATION
+// --------------------------------------------------
+
+function unlockIntroScroll() {
+
+  if (introFinished) return;
+
+  introFinished = true;
+
+  document.documentElement.classList.remove('intro-locked');
+  document.body.classList.remove('intro-locked');
+
+  // Show scroll indicator only now
+  scrollCue.classList.add('is-visible');
+
+  // Make sure user stays on first page
+  window.scrollTo({
+    top: 0,
+    behavior: 'auto'
+  });
+}
+
+
+// --------------------------------------------------
+// OPEN INVITATION
+// --------------------------------------------------
+
+openBtn.addEventListener('click', function () {
+
+  if (coverOpened) return;
+
+  coverOpened = true;
+
+  // Keep scrolling locked
+  document.documentElement.classList.add('intro-locked');
+  document.body.classList.add('intro-locked');
+
+  // Hide invitation text/button
+  coverContent.classList.add('is-hidden');
+
+  // Start music
+  startMusic();
+
+  // Start flower animation
+  startPetals();
+
+  // Start intro video
+  coverVideo.play().catch(function () {
+
+    // If video cannot play, don't permanently lock the page.
+    // Give the normal intro transition time to complete.
+    setTimeout(function () {
+      unlockIntroScroll();
+    }, 900);
+
   });
 
-  coverVideo.addEventListener('ended', function(){
-    scrollCue.classList.add('is-visible');
-  });
+});
 
-  // Remove the first page ONLY when the second page is fully visible.
-  // Scroll position is compensated so the second page does not jump.
-  var coupleSection = document.querySelector('.couple');
 
-  function removeCoverAfterSecondPage(){
-    if(coverRemoved || !coverOpened || !coupleSection) return;
+// --------------------------------------------------
+// VIDEO / FIRST PAGE ANIMATION COMPLETE
+// --------------------------------------------------
 
-    var rect = coupleSection.getBoundingClientRect();
-    var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+coverVideo.addEventListener('ended', function () {
 
-    // "Fully reached" means the second page occupies the viewport
-    // from its top to its bottom (or is effectively the active page on small screens).
-    var fullyReached =
-      rect.top >= -4 &&
-      rect.bottom <= viewportHeight + 4;
+  // Video has completely finished.
+  // Give the cover-content fade-out animation time to finish too.
+  setTimeout(function () {
 
-    if(!fullyReached) return;
+    unlockIntroScroll();
 
-    var coverHeight = cover.getBoundingClientRect().height;
+  }, 700);
 
-    coverRemoved = true;
-    cover.classList.add('cover-exiting');
+});
 
-    setTimeout(function(){
-      // Preserve the visual scroll position before removing the cover.
-      var before = window.scrollY;
-      cover.classList.add('cover-removed');
-      cover.setAttribute('aria-hidden','true');
 
-      // Removing the cover from normal flow moves everything upward.
-      // Compensate by the exact cover height, so the second page stays put.
-      var after = window.scrollY;
-      var delta = before - after;
+// --------------------------------------------------
+// SAFETY FALLBACK
+// --------------------------------------------------
 
-      if(Math.abs(delta) > 1){
-        window.scrollTo(0, before - delta);
+// If the video metadata is unavailable or the video
+// doesn't fire "ended", unlock after its duration.
+
+coverVideo.addEventListener('loadedmetadata', function () {
+
+  if (!coverOpened) return;
+
+  var duration = coverVideo.duration;
+
+  if (
+    duration &&
+    isFinite(duration)
+  ) {
+
+    setTimeout(function () {
+
+      if (!introFinished) {
+        unlockIntroScroll();
       }
 
-      document.body.classList.add('invitation-opened');
-    }, 650);
+    }, (duration * 1000) + 900);
+
   }
 
-  // Use scroll + resize so the user remains fully in control.
-  window.addEventListener('scroll', removeCoverAfterSecondPage, {passive:true});
-  window.addEventListener('resize', removeCoverAfterSecondPage);
+});
+
+
+// --------------------------------------------------
+// REMOVE COVER AFTER USER REACHES SECOND PAGE
+// --------------------------------------------------
+
+var coupleSection = document.querySelector('.couple');
+
+function removeCoverAfterSecondPage() {
+
+  if (
+    coverRemoved ||
+    !coverOpened ||
+    !introFinished ||
+    !coupleSection
+  ) {
+    return;
+  }
+
+  var rect = coupleSection.getBoundingClientRect();
+
+  var viewportHeight =
+    window.innerHeight ||
+    document.documentElement.clientHeight;
+
+  var fullyReached =
+    rect.top >= -4 &&
+    rect.bottom <= viewportHeight + 4;
+
+  if (!fullyReached) return;
+
+  var coverHeight =
+    cover.getBoundingClientRect().height;
+
+  coverRemoved = true;
+
+  cover.classList.add('cover-exiting');
+
+  setTimeout(function () {
+
+    var before = window.scrollY;
+
+    cover.classList.add('cover-removed');
+    cover.setAttribute('aria-hidden', 'true');
+
+    var after = window.scrollY;
+
+    var delta = before - after;
+
+    if (Math.abs(delta) > 1) {
+
+      window.scrollTo(
+        0,
+        before - delta
+      );
+
+    }
+
+    document.body.classList.add(
+      'invitation-opened'
+    );
+
+  }, 650);
+}
+
+
+// Only start checking after scrolling has been unlocked
+window.addEventListener(
+  'scroll',
+  removeCoverAfterSecondPage,
+  { passive: true }
+);
+
+window.addEventListener(
+  'resize',
+  removeCoverAfterSecondPage
+);
 
   // ---------- Gallery nav buttons ----------
   var track = document.getElementById('galleryTrack');
