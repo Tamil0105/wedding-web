@@ -155,9 +155,9 @@
         z-index: 1;
         background: linear-gradient(
           180deg,
-          rgba(43, 20, 20, 0.55) 0%,
-          rgba(43, 20, 20, 0.35) 45%,
-          rgba(43, 20, 20, 0.75) 100%
+          rgba(43, 20, 20, 0.25) 0%,
+          rgba(43, 20, 20, 0.15) 45%,
+          rgba(43, 20, 20, 0.35) 100%
         );
       }
       .cover-content {
@@ -207,16 +207,41 @@
       .open-btn {
         margin-top: 10px;
         padding: 13px 34px;
-        border: 1px solid var(--gold-soft);
-        border-radius: 2px;
+        border: 1px solid #f8e6a0;
+        border-radius: 20px;
         font-size: 12px;
         letter-spacing: 3px;
-        background: transparent;
-        color: #fff;
+
+        /* Full golden background */
+        background: linear-gradient(
+          135deg,
+          #fff1b8 0%,
+          #e6c15a 25%,
+          #d4a72c 50%,
+          #f5d979 75%,
+          #c8961a 100%
+        );
+
+        color: #4a3005;
+        font-weight: 600;
         cursor: pointer;
-        transition:
-          background 0.3s ease,
-          color 0.3s ease;
+
+        box-shadow:
+          0 4px 15px rgba(212, 175, 55, 0.35),
+          inset 0 1px 2px rgba(255, 255, 255, 0.7);
+
+        transition: all 0.3s ease;
+      }
+
+      .open-btn:hover {
+        background: linear-gradient(135deg, #fff5cc, #f1d16b, #d4a72c);
+
+        box-shadow: 0 6px 25px rgba(212, 175, 55, 0.55);
+        transform: translateY(-2px);
+      }
+
+      .open-btn:active {
+        transform: translateY(0);
       }
       .open-btn:hover,
       .open-btn:focus-visible {
@@ -1574,7 +1599,7 @@
       .countdown {
         position: relative;
         text-align: center;
-        padding: 110px 22px 70px;
+        padding: 100px 22px 70px;
         overflow: hidden;
         color: #fff;
         background-image:
